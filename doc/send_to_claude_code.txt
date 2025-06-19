@@ -1,0 +1,129 @@
+*send_to_claude_code.txt*    Send text from Vim to tmux claude code pane
+
+Author: i9wa4
+License: MIT
+
+==============================================================================
+CONTENTS                                           *send-to-claude-code-contents*
+
+    1. Introduction .................. |send-to-claude-code-introduction|
+    2. Requirements .................. |send-to-claude-code-requirements|
+    3. Installation .................. |send-to-claude-code-installation|
+    4. Configuration ................. |send-to-claude-code-configuration|
+    5. Commands ...................... |send-to-claude-code-commands|
+    6. Mappings ...................... |send-to-claude-code-mappings|
+    7. Examples ...................... |send-to-claude-code-examples|
+
+==============================================================================
+1. INTRODUCTION                                *send-to-claude-code-introduction*
+
+vim-tmux-send-to-claude-code is a Vim plugin that allows you to send text
+from Vim to a tmux pane running Claude Code. This enables seamless integration
+between your text editor and AI assistant.
+
+==============================================================================
+2. REQUIREMENTS                                *send-to-claude-code-requirements*
+
+- Unix-like system (Linux, macOS, etc.)
+- tmux
+- Claude Code running in a tmux pane
+
+==============================================================================
+3. INSTALLATION                                *send-to-claude-code-installation*
+
+Using vim-plug: >
+    Plug 'i9wa4/vim-tmux-send-to-claude-code'
+<
+
+Using Vundle: >
+    Plugin 'i9wa4/vim-tmux-send-to-claude-code'
+<
+
+Using dein: >
+    call dein#add('i9wa4/vim-tmux-send-to-claude-code')
+<
+
+==============================================================================
+4. CONFIGURATION                              *send-to-claude-code-configuration*
+
+                                                        *g:claude_code_target*
+g:claude_code_target~
+    Default: ''
+
+    Fallback tmux target pane when automatic detection fails.
+    The plugin automatically detects Claude Code panes in the current window
+    by searching for 'claude' processes. This setting is used only when
+    automatic detection cannot find a Claude Code pane.
+
+Example: >
+    let g:claude_code_target = 'main:1.2'
+<
+
+                                              *g:claude_code_no_default_mappings*
+g:claude_code_no_default_mappings~
+    Default: 0
+
+    Set to 1 to disable default key mappings.
+
+Example: >
+    let g:claude_code_no_default_mappings = 1
+<
+
+==============================================================================
+5. COMMANDS                                        *send-to-claude-code-commands*
+
+                                                        *:ClaudeCodeSendYanked*
+:ClaudeCodeSendYanked
+    Send the content of the * register (yanked text) to Claude Code.
+
+                                                        *:ClaudeCodeSendBuffer*
+:ClaudeCodeSendBuffer
+    Send the entire current buffer to Claude Code.
+
+                                                         *:ClaudeCodeSendRange*
+:[range]ClaudeCodeSendRange
+    Send the specified range of lines to Claude Code.
+
+==============================================================================
+6. MAPPINGS                                        *send-to-claude-code-mappings*
+
+Default mappings (can be disabled with g:claude_code_no_default_mappings):
+
+    <Space>cy    Send yanked text to Claude Code
+    <Space>cb    Send entire buffer to Claude Code
+    <Space>cv    Send visual selection to Claude Code (visual mode)
+
+Plug mappings for custom configuration:
+
+    <Plug>(send-to-claude-code-yanked)    Send yanked text
+    <Plug>(send-to-claude-code-buffer)    Send entire buffer
+    <Plug>(send-to-claude-code-visual)    Send visual selection
+
+==============================================================================
+7. LIMITATIONS                                    *send-to-claude-code-limitations*
+
+- The plugin searches for Claude Code panes in the current tmux window only
+- If multiple Claude Code panes exist in the same window, the first one found
+  will be used as the target
+- Automatic detection relies on finding 'claude' processes; if the process
+  name differs, manual configuration via g:claude_code_target may be needed
+
+==============================================================================
+8. EXAMPLES                                        *send-to-claude-code-examples*
+
+Custom mappings: >
+    nmap <Leader>cy <Plug>(send-to-claude-code-yanked)
+    nmap <Leader>cb <Plug>(send-to-claude-code-buffer)
+    vmap <Leader>cv <Plug>(send-to-claude-code-visual)
+<
+
+Fallback target configuration: >
+    let g:claude_code_target = 'ai:0.1'
+<
+
+Send specific lines: >
+    :10,20ClaudeCodeSendRange
+<
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
