@@ -95,6 +95,10 @@ Example: >
 :[range]AiCliSendRange
     Send the specified range of lines to AI CLI.
 
+                                                    *:AiCliSendCurrentLine*
+:AiCliSendCurrentLine
+    Send the current line to AI CLI.
+
 ==============================================================================
 6. MAPPINGS                                        *send-to-ai-cli-mappings*
 
@@ -109,6 +113,7 @@ Plug mappings for custom configuration:
     <Plug>(send-to-ai-cli-yanked)    Send yanked text
     <Plug>(send-to-ai-cli-buffer)    Send entire buffer
     <Plug>(send-to-ai-cli-visual)    Send visual selection
+    <Plug>(send-to-ai-cli-current-line) Send current line
 
 ==============================================================================
 7. LIMITATIONS                                    *send-to-ai-cli-limitations*
