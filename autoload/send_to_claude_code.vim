@@ -58,7 +58,7 @@ function! s:send_text_to_claude_code(text) abort
 
   let l:lines = split(a:text, '\n')
   for l:line in l:lines
-    let l:cmd = 'tmux send-keys -t ' . l:target . ' ' . shellescape(l:line)
+    let l:cmd = 'tmux send-keys -t ' . l:target . ' -- ' . shellescape(l:line)
     call system(l:cmd)
     if l:line != l:lines[-1]
       call system('tmux send-keys -t ' . l:target . ' C-j')
