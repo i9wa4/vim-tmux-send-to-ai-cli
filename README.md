@@ -56,9 +56,9 @@ The plugin provides `<Plug>` mappings that you can map to your preferred keys.
 
 Example configuration:
 ```vim
-nmap <Leader>cy <Plug>(send-to-ai-cli-yanked)
-nmap <Leader>cb <Plug>(send-to-ai-cli-buffer)
-vmap <Leader>cv <Plug>(send-to-ai-cli-visual)
+nmap <Leader>ay <Plug>(send-to-ai-cli-yanked)
+nmap <Leader>ab <Plug>(send-to-ai-cli-buffer)
+vmap <Leader>av <Plug>(send-to-ai-cli-visual)
 ```
 
 ### Commands
@@ -70,9 +70,9 @@ vmap <Leader>cv <Plug>(send-to-ai-cli-visual)
 ### Custom Mappings
 
 ```vim
-nmap <Leader>cy <Plug>(send-to-ai-cli-yanked)
-nmap <Leader>cb <Plug>(send-to-ai-cli-buffer)
-vmap <Leader>cv <Plug>(send-to-ai-cli-visual)
+nmap <Leader>ay <Plug>(send-to-ai-cli-yanked)
+nmap <Leader>ab <Plug>(send-to-ai-cli-buffer)
+vmap <Leader>av <Plug>(send-to-ai-cli-visual)
 ```
 
 ## Examples
