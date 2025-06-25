@@ -1,49 +1,49 @@
-# vim-tmux-send-to-claude-code
+# vim-tmux-send-to-ai-cli
 
-A Vim plugin that allows you to send text from Vim to a tmux pane running Claude Code. This enables seamless integration between your text editor and AI assistant.
+A Vim plugin that allows you to send text from Vim to a tmux pane running AI CLI. This enables seamless integration between your text editor and AI assistant.
 
 ## Features
 
-- Send yanked text to Claude Code
-- Send entire buffer to Claude Code
-- Send visual selection to Claude Code
-- Send specific line ranges to Claude Code
+- Send yanked text to AI CLI
+- Send entire buffer to AI CLI
+- Send visual selection to AI CLI
+- Send specific line ranges to AI CLI
 - Configurable tmux target pane
 
 ## Requirements
 
 - Unix-like system (Linux, macOS, etc.)
 - tmux
-- Claude Code running in a tmux pane
+- AI CLI running in a tmux pane
 
 ## Installation
 
 ### Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug 'i9wa4/vim-tmux-send-to-claude-code'
+Plug 'i9wa4/vim-tmux-send-to-ai-cli'
 ```
 
 ### Using [Vundle](https://github.com/VundleVim/Vundle.vim)
 
 ```vim
-Plugin 'i9wa4/vim-tmux-send-to-claude-code'
+Plugin 'i9wa4/vim-tmux-send-to-ai-cli'
 ```
 
 ### Using [dein](https://github.com/Shougo/dein.vim)
 
 ```vim
-call dein#add('i9wa4/vim-tmux-send-to-claude-code')
+call dein#add('i9wa4/vim-tmux-send-to-ai-cli')
 ```
 
 ## Configuration
 
 ### Target Pane
 
-The plugin automatically detects Claude Code panes in the current tmux window by searching for `claude` processes. You can set a fallback target pane for cases where automatic detection fails:
+The plugin automatically detects AI CLI panes in the current tmux window by searching for `ai` processes. You can set a fallback target pane for cases where automatic detection fails:
 
 ```vim
-let g:claude_code_target = 'session:window.pane'
+let g:ai_cli_target = 'session:window.pane'
 ```
 
 Default: `''` (empty, relies on automatic detection)
@@ -56,50 +56,50 @@ The plugin provides `<Plug>` mappings that you can map to your preferred keys.
 
 Example configuration:
 ```vim
-nmap <Leader>cy <Plug>(send-to-claude-code-yanked)
-nmap <Leader>cb <Plug>(send-to-claude-code-buffer)
-vmap <Leader>cv <Plug>(send-to-claude-code-visual)
+nmap <Leader>cy <Plug>(send-to-ai-cli-yanked)
+nmap <Leader>cb <Plug>(send-to-ai-cli-buffer)
+vmap <Leader>cv <Plug>(send-to-ai-cli-visual)
 ```
 
 ### Commands
 
-- `:ClaudeCodeSendYanked` - Send yanked text
-- `:ClaudeCodeSendBuffer` - Send entire buffer
-- `:[range]ClaudeCodeSendRange` - Send specific line range
+- `:AiCliSendYanked` - Send yanked text
+- `:AiCliSendBuffer` - Send entire buffer
+- `:[range]AiCliSendRange` - Send specific line range
 
 ### Custom Mappings
 
 ```vim
-nmap <Leader>cy <Plug>(send-to-claude-code-yanked)
-nmap <Leader>cb <Plug>(send-to-claude-code-buffer)
-vmap <Leader>cv <Plug>(send-to-claude-code-visual)
+nmap <Leader>cy <Plug>(send-to-ai-cli-yanked)
+nmap <Leader>cb <Plug>(send-to-ai-cli-buffer)
+vmap <Leader>cv <Plug>(send-to-ai-cli-visual)
 ```
 
 ## Examples
 
 ### Basic Usage
 
-1. Start Claude Code in a tmux pane
+1. Start AI CLI in a tmux pane
 2. Note the tmux target (e.g., `main:0.1`)
 3. Configure the target in your vimrc:
    ```vim
-   let g:claude_code_target = 'main:0.1'
+   let g:ai_cli_target = 'main:0.1'
    ```
-4. In Vim, yank some text and press `<Space>cy` to send it to Claude Code
+4. In Vim, yank some text and press `<Space>cy` to send it to AI CLI
 
 ### Send Specific Lines
 
 ```vim
-:10,20ClaudeCodeSendRange
+:10,20AiCliSendRange
 ```
 
-This sends lines 10-20 to Claude Code.
+This sends lines 10-20 to AI CLI.
 
 ## Limitations
 
-- The plugin searches for Claude Code panes in the current tmux window only
-- If multiple Claude Code panes exist in the same window, the first one found will be used as the target
-- Automatic detection relies on finding 'claude' processes; if the process name differs, manual configuration via `g:claude_code_target` may be needed
+- The plugin searches for AI CLI panes in the current tmux window only
+- If multiple AI CLI panes exist in the same window, the first one found will be used as the target
+- Automatic detection relies on finding 'ai' processes; if the process name differs, manual configuration via `g:ai_cli_target` may be needed
 
 ## License
 

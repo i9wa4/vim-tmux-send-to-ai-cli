@@ -1,37 +1,38 @@
-function! send_to_claude_code#send_yanked() abort
+function! send_to_ai_cli#send_yanked() abort
   let l:text = getreg('*')
   if empty(l:text)
     echo "No yanked text found in * register"
     return
   endif
 
-  call s:send_text_to_claude_code(l:text)
-  echo "Sent yanked text to Claude Code"
+  call s:send_text_to_ai_cli(l:text)
+  echo "Sent yanked text to AI CLI"
 endfunction
 
-function! send_to_claude_code#send_buffer() abort
-  let l:text = join(getline(1, '$'), "\n")
+function! send_to_ai_cli#send_buffer() abort
+  let l:text = join(getline(1, '
+), "\n")
   if empty(l:text)
     echo "Buffer is empty"
     return
   endif
 
-  call s:send_text_to_claude_code(l:text)
-  echo "Sent entire buffer to Claude Code"
+  call s:send_text_to_ai_cli(l:text)
+  echo "Sent entire buffer to AI CLI"
 endfunction
 
-function! send_to_claude_code#send_range() range abort
+function! send_to_ai_cli#send_range() range abort
   let l:text = join(getline(a:firstline, a:lastline), "\n")
   if empty(l:text)
     echo "Selected range is empty"
     return
   endif
 
-  call s:send_text_to_claude_code(l:text)
-  echo "Sent selected range to Claude Code"
+  call s:send_text_to_ai_cli(l:text)
+  echo "Sent selected range to AI CLI"
 endfunction
 
-function! send_to_claude_code#send_visual() abort
+function! send_to_ai_cli#send_visual() abort
   let l:save_reg = getreg('"')
   let l:save_regtype = getregtype('"')
 
@@ -45,14 +46,14 @@ function! send_to_claude_code#send_visual() abort
     return
   endif
 
-  call s:send_text_to_claude_code(l:text)
-  echo "Sent visual selection to Claude Code"
+  call s:send_text_to_ai_cli(l:text)
+  echo "Sent visual selection to AI CLI"
 endfunction
 
-function! s:send_text_to_claude_code(text) abort
-  let l:target = s:find_claude_code_pane()
+function! s:send_text_to_ai_cli(text) abort
+  let l:target = s:find_ai_cli_pane()
   if empty(l:target)
-    echo "Claude Code pane not found in current window"
+    echo "AI CLI pane not found in current window"
     return
   endif
 
@@ -69,7 +70,10 @@ function! s:send_text_to_claude_code(text) abort
   call system(l:enter_cmd)
 endfunction
 
-function! s:find_claude_code_pane() abort
+function! s:find_ai_cli_pane() abort
+  let l:process_names = get(g:, 'ai_cli_process_names', ['claude', 'gemini'])
+  let l:grep_pattern = join(l:process_names, '\|')
+
   let l:panes_output = system('tmux list-panes -F "#{pane_id} #{pane_pid}"')
   let l:panes = split(l:panes_output, '\n')
 
@@ -78,11 +82,11 @@ function! s:find_claude_code_pane() abort
     let l:pane_id = l:parts[0]
     let l:pid = l:parts[1]
 
-    let l:ps_output = system('ps -ef | grep -E "' . l:pid . '" | grep claude | grep -v grep')
+    let l:ps_output = system('ps -ef | grep -E "' . l:pid . '" | grep -E "' . l:grep_pattern . '" | grep -v grep')
     if !empty(l:ps_output)
       return l:pane_id
     endif
   endfor
 
-  return get(g:, 'claude_code_target', '')
+  return get(g:, 'ai_cli_target', '')
 endfunction
