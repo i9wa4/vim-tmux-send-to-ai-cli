@@ -104,9 +104,9 @@ Example: >
 
 Default mappings (can be disabled with g:ai_cli_no_default_mappings):
 
-    <Space>cy    Send yanked text to AI CLI
-    <Space>cb    Send entire buffer to AI CLI
-    <Space>cv    Send visual selection to AI CLI (visual mode)
+    <Space>ay    Send yanked text to AI CLI
+    <Space>ab    Send entire buffer to AI CLI
+    <Space>av    Send visual selection to AI CLI (visual mode)
 
 Plug mappings for custom configuration:
 
@@ -128,9 +128,9 @@ Plug mappings for custom configuration:
 8. EXAMPLES                                        *send-to-ai-cli-examples*
 
 Custom mappings: >
-    nmap <Leader>cy <Plug>(send-to-ai-cli-yanked)
-    nmap <Leader>cb <Plug>(send-to-ai-cli-buffer)
-    vmap <Leader>cv <Plug>(send-to-ai-cli-visual)
+    nmap <Leader>ay <Plug>(send-to-ai-cli-yanked)
+    nmap <Leader>ab <Plug>(send-to-ai-cli-buffer)
+    vmap <Leader>av <Plug>(send-to-ai-cli-visual)
 <
 
 Fallback target configuration: >
