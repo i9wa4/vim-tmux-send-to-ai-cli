@@ -28,9 +28,11 @@ command! -nargs=0 AiCliSendYanked call send_to_ai_cli#send_yanked()
 command! -nargs=0 AiCliSendBuffer call send_to_ai_cli#send_buffer()
 command! -range AiCliSendRange <line1>,<line2>call send_to_ai_cli#send_range()
 command! -nargs=0 AiCliSendCurrentLine call send_to_ai_cli#send_current_line()
+command! -nargs=0 AiCliSendParagraph call send_to_ai_cli#send_paragraph()
 
 nnoremap <Plug>(send-to-ai-cli-yanked) <Cmd>call send_to_ai_cli#send_yanked()<CR>
 nnoremap <Plug>(send-to-ai-cli-buffer) <Cmd>call send_to_ai_cli#send_buffer()<CR>
 vnoremap <Plug>(send-to-ai-cli-visual) :<C-u>call send_to_ai_cli#send_visual()<CR>
 nnoremap <Plug>(send-to-ai-cli-current-line) <Cmd>call send_to_ai_cli#send_current_line()<CR>
+nnoremap <Plug>(send-to-ai-cli-paragraph) <Cmd>call send_to_ai_cli#send_paragraph()<CR>
 

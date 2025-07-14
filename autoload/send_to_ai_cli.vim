@@ -60,6 +60,44 @@ function! send_to_ai_cli#send_current_line() abort
   echo "Sent current line to AI CLI"
 endfunction
 
+function! send_to_ai_cli#send_paragraph() abort
+  let l:save_pos = getpos('.')
+  
+  " Find paragraph boundaries
+  let l:start_line = search('^$\|^\s*$', 'bnW') + 1
+  if l:start_line == 1 && getline(1) =~ '^\s*$'
+    let l:start_line = search('^\S', 'nW')
+  endif
+  if l:start_line == 0
+    let l:start_line = 1
+  endif
+  
+  let l:end_line = search('^$\|^\s*$', 'nW') - 1
+  if l:end_line < 0
+    let l:end_line = line('$')
+  endif
+  
+  " Make sure we include the current line
+  if l:start_line > line('.')
+    let l:start_line = line('.')
+  endif
+  if l:end_line < line('.')
+    let l:end_line = line('.')
+  endif
+  
+  let l:text = join(getline(l:start_line, l:end_line), "\n")
+  
+  call setpos('.', l:save_pos)
+  
+  if empty(l:text)
+    echo "No paragraph found"
+    return
+  endif
+
+  call s:send_text_to_ai_cli(l:text)
+  echo "Sent current paragraph to AI CLI"
+endfunction
+
 function! s:send_text_to_ai_cli(text) abort
   let l:target = s:find_ai_cli_pane()
   if empty(l:target)
