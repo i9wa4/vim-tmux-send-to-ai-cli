@@ -64,7 +64,7 @@ function! send_to_ai_cli#send_paragraph() abort
   let l:save_pos = getpos('.')
   
   " Find paragraph boundaries
-  let l:start_line = search('^$\|^\s*$', 'bnW') + 1
+  let l:start_line = search('^\s*$', 'bnW') + 1
   if l:start_line == 1 && getline(1) =~ '^\s*$'
     let l:start_line = search('^\S', 'nW')
   endif
