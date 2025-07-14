@@ -8,6 +8,8 @@ A Vim plugin that allows you to send text from Vim to a tmux pane running AI CLI
 - Send entire buffer to AI CLI
 - Send visual selection to AI CLI
 - Send specific line ranges to AI CLI
+- Send current line to AI CLI
+- Send current paragraph to AI CLI
 - Configurable tmux target pane
 
 ## Requirements
@@ -59,6 +61,8 @@ Example configuration:
 nmap <Leader>ay <Plug>(send-to-ai-cli-yanked)
 nmap <Leader>ab <Plug>(send-to-ai-cli-buffer)
 vmap <Leader>av <Plug>(send-to-ai-cli-visual)
+nmap <Leader>al <Plug>(send-to-ai-cli-current-line)
+nmap <Leader>ap <Plug>(send-to-ai-cli-paragraph)
 ```
 
 ### Commands
@@ -66,6 +70,8 @@ vmap <Leader>av <Plug>(send-to-ai-cli-visual)
 - `:AiCliSendYanked` - Send yanked text
 - `:AiCliSendBuffer` - Send entire buffer
 - `:[range]AiCliSendRange` - Send specific line range
+- `:AiCliSendCurrentLine` - Send current line
+- `:AiCliSendParagraph` - Send current paragraph
 
 ### Custom Mappings
 
@@ -73,6 +79,8 @@ vmap <Leader>av <Plug>(send-to-ai-cli-visual)
 nmap <Leader>ay <Plug>(send-to-ai-cli-yanked)
 nmap <Leader>ab <Plug>(send-to-ai-cli-buffer)
 vmap <Leader>av <Plug>(send-to-ai-cli-visual)
+nmap <Leader>al <Plug>(send-to-ai-cli-current-line)
+nmap <Leader>ap <Plug>(send-to-ai-cli-paragraph)
 ```
 
 ## Examples

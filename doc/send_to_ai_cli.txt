@@ -99,6 +99,10 @@ Example: >
 :AiCliSendCurrentLine
     Send the current line to AI CLI.
 
+                                                      *:AiCliSendParagraph*
+:AiCliSendParagraph
+    Send the current paragraph to AI CLI.
+
 ==============================================================================
 6. MAPPINGS                                        *send-to-ai-cli-mappings*
 
@@ -114,6 +118,7 @@ Plug mappings for custom configuration:
     <Plug>(send-to-ai-cli-buffer)    Send entire buffer
     <Plug>(send-to-ai-cli-visual)    Send visual selection
     <Plug>(send-to-ai-cli-current-line) Send current line
+    <Plug>(send-to-ai-cli-paragraph) Send current paragraph
 
 ==============================================================================
 7. LIMITATIONS                                    *send-to-ai-cli-limitations*
@@ -131,6 +136,8 @@ Custom mappings: >
     nmap <Leader>ay <Plug>(send-to-ai-cli-yanked)
     nmap <Leader>ab <Plug>(send-to-ai-cli-buffer)
     vmap <Leader>av <Plug>(send-to-ai-cli-visual)
+    nmap <Leader>al <Plug>(send-to-ai-cli-current-line)
+    nmap <Leader>ap <Plug>(send-to-ai-cli-paragraph)
 <
 
 Fallback target configuration: >
