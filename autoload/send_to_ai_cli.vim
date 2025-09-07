@@ -101,7 +101,7 @@ endfunction
 function! s:send_text_to_ai_cli(text) abort
   let l:target = s:find_ai_cli_pane()
   if empty(l:target)
-    echo "AI CLI pane not found in current window"
+    echo "AI CLI pane not found in current session"
     return
   endif
 
@@ -119,7 +119,42 @@ function! s:send_text_to_ai_cli(text) abort
 endfunction
 
 function! s:find_ai_cli_pane() abort
+  " First, try to find in current window
   let l:panes_output = system('tmux list-panes -F "#{pane_pid} #{pane_id}"')
+  let l:pane_map = {}
+  for l:line in split(l:panes_output, "\n")
+    let l:parts = split(l:line)
+    if len(l:parts) >= 2
+      let l:pane_map[l:parts[0]] = l:parts[1]
+    endif
+  endfor
+
+  let l:ps_output = system('ps -ax -o ppid,command')
+  let l:process_names = get(g:, 'ai_cli_process_names', ['claude', 'gemini'])
+
+  " Check processes against current window panes
+  for l:line in split(l:ps_output, "\n")
+    let l:found_process = 0
+    for l:name in l:process_names
+      if l:line =~# l:name && l:line !~# 'grep'
+        let l:found_process = 1
+        break
+      endif
+    endfor
+
+    if l:found_process
+      let l:parts = split(l:line)
+      if len(l:parts) >= 1
+        let l:ppid = l:parts[0]
+        if has_key(l:pane_map, l:ppid)
+          return l:pane_map[l:ppid]
+        endif
+      endif
+    endif
+  endfor
+
+  " If not found in current window, search in entire session
+  let l:panes_output = system('tmux list-panes -s -F "#{pane_pid} #{pane_id}"')
   let l:pane_map = {}
   for l:line in split(l:panes_output, "\n")
     let l:parts = split(l:line)
@@ -132,9 +167,7 @@ function! s:find_ai_cli_pane() abort
     return get(g:, 'ai_cli_target', '')
   endif
 
-  let l:ps_output = system('ps -ax -o ppid,command')
-  let l:process_names = get(g:, 'ai_cli_process_names', ['claude', 'gemini'])
-
+  " Check processes against session panes
   for l:line in split(l:ps_output, "\n")
     let l:found_process = 0
     for l:name in l:process_names
