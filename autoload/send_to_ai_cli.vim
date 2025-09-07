@@ -101,7 +101,7 @@ endfunction
 function! s:send_text_to_ai_cli(text) abort
   let l:target = s:find_ai_cli_pane()
   if empty(l:target)
-    echo "AI CLI pane not found in current window"
+    echo "AI CLI pane not found in current session"
     return
   endif
 
@@ -118,8 +118,9 @@ function! s:send_text_to_ai_cli(text) abort
   call system(l:enter_cmd)
 endfunction
 
-function! s:find_ai_cli_pane() abort
-  let l:panes_output = system('tmux list-panes -F "#{pane_pid} #{pane_id}"')
+function! s:get_tmux_pane_map(tmux_flags) abort
+  let l:cmd = 'tmux list-panes ' . a:tmux_flags . ' -F "#{pane_pid} #{pane_id}"'
+  let l:panes_output = system(l:cmd)
   let l:pane_map = {}
   for l:line in split(l:panes_output, "\n")
     let l:parts = split(l:line)
@@ -127,17 +128,13 @@ function! s:find_ai_cli_pane() abort
       let l:pane_map[l:parts[0]] = l:parts[1]
     endif
   endfor
+  return l:pane_map
+endfunction
 
-  if empty(l:pane_map)
-    return get(g:, 'ai_cli_target', '')
-  endif
-
-  let l:ps_output = system('ps -ax -o ppid,command')
-  let l:process_names = get(g:, 'ai_cli_process_names', ['claude', 'gemini'])
-
-  for l:line in split(l:ps_output, "\n")
+function! s:find_ai_cli_in_panes(pane_map, ps_output, process_names) abort
+  for l:line in split(a:ps_output, "\n")
     let l:found_process = 0
-    for l:name in l:process_names
+    for l:name in a:process_names
       if l:line =~# l:name && l:line !~# 'grep'
         let l:found_process = 1
         break
@@ -148,12 +145,37 @@ function! s:find_ai_cli_pane() abort
       let l:parts = split(l:line)
       if len(l:parts) >= 1
         let l:ppid = l:parts[0]
-        if has_key(l:pane_map, l:ppid)
-          return l:pane_map[l:ppid]
+        if has_key(a:pane_map, l:ppid)
+          return a:pane_map[l:ppid]
         endif
       endif
     endif
   endfor
+  return ''
+endfunction
+
+function! s:find_ai_cli_pane() abort
+  " Get process info once for both searches
+  let l:ps_output = system('ps -ax -o ppid,command')
+  let l:process_names = get(g:, 'ai_cli_process_names', ['claude', 'gemini'])
+
+  " First, try to find in current window
+  let l:pane_map = s:get_tmux_pane_map('')
+  let l:result = s:find_ai_cli_in_panes(l:pane_map, l:ps_output, l:process_names)
+  if !empty(l:result)
+    return l:result
+  endif
+
+  " If not found in current window, search in entire session
+  let l:pane_map = s:get_tmux_pane_map('-s')
+  if empty(l:pane_map)
+    return get(g:, 'ai_cli_target', '')
+  endif
+  
+  let l:result = s:find_ai_cli_in_panes(l:pane_map, l:ps_output, l:process_names)
+  if !empty(l:result)
+    return l:result
+  endif
 
   return get(g:, 'ai_cli_target', '')
 endfunction
