@@ -163,7 +163,7 @@ function! s:find_ai_cli_pane() abort
 
   " Combine default and additional process names
   let l:additional = get(g:, 'ai_cli_additional_processes', [])
-  let l:process_names = s:DEFAULT_AI_CLIS + l:additional
+  let l:process_names = uniq(sort(s:DEFAULT_AI_CLIS + l:additional))
 
   " First, try to find in current window
   let l:pane_map = s:get_tmux_pane_map('')
