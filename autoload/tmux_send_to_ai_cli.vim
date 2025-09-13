@@ -1,4 +1,7 @@
-function! send_to_ai_cli#send_yanked() abort
+" Default supported AI CLI processes
+let s:DEFAULT_AI_CLIS = ['claude', 'codex', 'gemini']
+
+function! tmux_send_to_ai_cli#send_yanked() abort
   let l:text = getreg('*')
   if empty(l:text)
     echo "No yanked text found in * register"
@@ -9,7 +12,7 @@ function! send_to_ai_cli#send_yanked() abort
   echo "Sent yanked text to AI CLI"
 endfunction
 
-function! send_to_ai_cli#send_buffer() abort
+function! tmux_send_to_ai_cli#send_buffer() abort
   let l:text = join(getline(1, '$'), "\n")
   if empty(l:text)
     echo "Buffer is empty"
@@ -20,7 +23,7 @@ function! send_to_ai_cli#send_buffer() abort
   echo "Sent entire buffer to AI CLI"
 endfunction
 
-function! send_to_ai_cli#send_range() range abort
+function! tmux_send_to_ai_cli#send_range() range abort
   let l:text = join(getline(a:firstline, a:lastline), "\n")
   if empty(l:text)
     echo "Selected range is empty"
@@ -31,7 +34,7 @@ function! send_to_ai_cli#send_range() range abort
   echo "Sent selected range to AI CLI"
 endfunction
 
-function! send_to_ai_cli#send_visual() abort
+function! tmux_send_to_ai_cli#send_visual() abort
   let l:save_reg = getreg('"')
   let l:save_regtype = getregtype('"')
 
@@ -49,7 +52,7 @@ function! send_to_ai_cli#send_visual() abort
   echo "Sent visual selection to AI CLI"
 endfunction
 
-function! send_to_ai_cli#send_current_line() abort
+function! tmux_send_to_ai_cli#send_current_line() abort
   let l:text = getline('.')
   if empty(l:text)
     echo "Current line is empty"
@@ -60,7 +63,7 @@ function! send_to_ai_cli#send_current_line() abort
   echo "Sent current line to AI CLI"
 endfunction
 
-function! send_to_ai_cli#send_paragraph() abort
+function! tmux_send_to_ai_cli#send_paragraph() abort
   let l:save_pos = getpos('.')
   
   " Find paragraph boundaries
@@ -157,7 +160,10 @@ endfunction
 function! s:find_ai_cli_pane() abort
   " Get process info once for both searches
   let l:ps_output = system('ps -ax -o ppid,command')
-  let l:process_names = get(g:, 'ai_cli_process_names', ['claude', 'gemini'])
+
+  " Combine default and additional process names
+  let l:additional = get(g:, 'ai_cli_additional_processes', [])
+  let l:process_names = uniq(sort(s:DEFAULT_AI_CLIS + l:additional))
 
   " First, try to find in current window
   let l:pane_map = s:get_tmux_pane_map('')
