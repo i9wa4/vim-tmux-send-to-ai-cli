@@ -88,7 +88,8 @@ g:ai_cli_target~
 
     Fallback tmux target pane when automatic detection fails.
     The plugin automatically detects AI CLI panes in the current window
-    by searching for processes defined in `g:ai_cli_process_names`.
+    by searching for supported AI CLI processes and those defined in
+    `g:ai_cli_additional_processes`.
     This setting is used only when automatic detection cannot find an AI CLI pane.
 
 Example: >
