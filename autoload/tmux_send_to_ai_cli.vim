@@ -164,8 +164,7 @@ endfunction
 function! s:get_target_pane(count) abort
   " If count is provided (>1), use it as pane index
   if a:count > 1
-    let l:pane_index = a:count
-    let l:pane_id = system('tmux display-message -t .' . l:pane_index . ' -p "#{pane_id}" 2>/dev/null | tr -d "\n"')
+    let l:pane_id = system('tmux display-message -t .' . a:count . ' -p "#{pane_id}" 2>/dev/null | tr -d "\n"')
     if v:shell_error == 0 && !empty(l:pane_id)
       return l:pane_id
     else
