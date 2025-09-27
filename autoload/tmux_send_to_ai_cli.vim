@@ -32,7 +32,7 @@ function! tmux_send_to_ai_cli#send_visual(...) abort
   let l:save_reg = getreg('"')
   let l:save_regtype = getregtype('"')
 
-  normal! gvy
+  normal! gv"y
   let l:text = getreg('"')
 
   call setreg('"', l:save_reg, l:save_regtype)
@@ -102,105 +102,76 @@ function! tmux_send_to_ai_cli#send_paragraph(...) abort
 endfunction
 
 function! s:send_text_to_ai_cli(text, count, explicit) abort
-  let l:target = s:get_target_pane(a:count, a:explicit)
-  if empty(l:target)
-    if a:explicit && a:count > 0
+  " Handle explicit pane number
+  if a:explicit && a:count > 0
+    let l:target = system('tmux display-message -t .' . a:count . ' -p "#{pane_id}" 2>/dev/null | tr -d "\n"')
+    if v:shell_error != 0 || empty(l:target)
       echo "Pane " . a:count . " not found in current window"
-    else
-      echo "AI CLI pane not found in current session"
+      return
     endif
+  else
+    " Auto-detect AI CLI pane
+    let l:target = s:find_ai_cli_pane()
+  endif
+
+  if empty(l:target)
+    echo "No AI CLI found in current window. Start an AI CLI (claude, codex, copilot, gemini) in a tmux pane."
     return
   endif
 
-  let l:lines = split(a:text, '\n')
-  for l:line in l:lines
-    let l:cmd = 'tmux send-keys -t ' . l:target . ' -- ' . shellescape(l:line)
-    call system(l:cmd)
-    if l:line != l:lines[-1]
-      call system('tmux send-keys -t ' . l:target . ' C-j')
-    endif
+  " Send text line by line
+  for l:line in split(a:text, '\n')
+    call system('tmux send-keys -t ' . l:target . ' -- ' . shellescape(l:line))
+    call system('tmux send-keys -t ' . l:target . ' C-j')
   endfor
-
-  let l:enter_cmd = 'tmux send-keys -t ' . l:target . ' Enter'
-  call system(l:enter_cmd)
-endfunction
-
-function! s:get_tmux_pane_map(tmux_flags) abort
-  let l:cmd = 'tmux list-panes ' . a:tmux_flags . ' -F "#{pane_pid} #{pane_id}"'
-  let l:panes_output = system(l:cmd)
-  let l:pane_map = {}
-  for l:line in split(l:panes_output, "\n")
-    let l:parts = split(l:line)
-    if len(l:parts) >= 2
-      let l:pane_map[l:parts[0]] = l:parts[1]
-    endif
-  endfor
-  return l:pane_map
-endfunction
-
-function! s:find_ai_cli_in_panes(pane_map, ps_output, process_names) abort
-  for l:line in split(a:ps_output, "\n")
-    let l:found_process = 0
-    for l:name in a:process_names
-      if l:line =~# l:name && l:line !~# 'grep'
-        let l:found_process = 1
-        break
-      endif
-    endfor
-
-    if l:found_process
-      let l:parts = split(l:line)
-      if len(l:parts) >= 1
-        let l:ppid = l:parts[0]
-        if has_key(a:pane_map, l:ppid)
-          return a:pane_map[l:ppid]
-        endif
-      endif
-    endif
-  endfor
-  return ''
-endfunction
-
-function! s:get_target_pane(count, explicit) abort
-  " If count is explicitly provided (user typed a number), use it as pane index
-  if a:explicit && a:count > 0
-    let l:pane_id = system('tmux display-message -t .' . a:count . ' -p "#{pane_id}" 2>/dev/null | tr -d "\n"')
-    if v:shell_error == 0 && !empty(l:pane_id)
-      return l:pane_id
-    else
-      return ''
-    endif
-  endif
-
-  " Otherwise, use auto-detection
-  return s:find_ai_cli_pane()
+  call system('tmux send-keys -t ' . l:target . ' Enter')
 endfunction
 
 function! s:find_ai_cli_pane() abort
-  " Get process info once for both searches
-  let l:ps_output = system('ps -ax -o ppid,command')
+  " Get panes with their info for current window (sorted by pane index)
+  let l:panes = system('tmux list-panes -F "#{pane_index} #{pane_pid} #{pane_id}"')
+
+  " Build ordered list of panes
+  let l:pane_list = []
+  for l:line in split(l:panes, "\n")
+    let l:parts = split(l:line)
+    if len(l:parts) >= 3
+      " Store as [index, pid, pane_id]
+      call add(l:pane_list, {'index': l:parts[0], 'pid': l:parts[1], 'pane_id': l:parts[2]})
+    endif
+  endfor
+
+  if empty(l:pane_list)
+    return ''
+  endif
+
+  " Get process info for all panes
+  let l:pids = map(copy(l:pane_list), 'v:val.pid')
+  let l:ps_output = system('ps -p ' . join(l:pids, ',') . ' -o pid,command 2>/dev/null')
+
+  " Build process map
+  let l:process_map = {}
+  for l:line in split(l:ps_output, "\n")[1:]  " Skip header
+    let l:pid = matchstr(l:line, '^\s*\zs\d\+')
+    if !empty(l:pid)
+      let l:process_map[l:pid] = l:line
+    endif
+  endfor
 
   " Combine default and additional process names
-  let l:additional = get(g:, 'ai_cli_additional_processes', [])
+  let l:additional = get(g:, 'tmux_ai_cli_additional_processes', [])
   let l:process_names = uniq(sort(s:DEFAULT_AI_CLIS + l:additional))
 
-  " First, try to find in current window
-  let l:pane_map = s:get_tmux_pane_map('')
-  let l:result = s:find_ai_cli_in_panes(l:pane_map, l:ps_output, l:process_names)
-  if !empty(l:result)
-    return l:result
-  endif
-
-  " If not found in current window, search in entire session
-  let l:pane_map = s:get_tmux_pane_map('-s')
-  if empty(l:pane_map)
-    return get(g:, 'ai_cli_target', '')
-  endif
-
-  let l:result = s:find_ai_cli_in_panes(l:pane_map, l:ps_output, l:process_names)
-  if !empty(l:result)
-    return l:result
-  endif
-
-  return get(g:, 'ai_cli_target', '')
+  " Search for AI CLI in pane index order
+  for l:pane in l:pane_list
+    if has_key(l:process_map, l:pane.pid)
+      let l:cmd_line = l:process_map[l:pane.pid]
+      for l:name in l:process_names
+        if l:cmd_line =~# l:name && l:cmd_line !~# 'grep'
+          return l:pane.pane_id
+        endif
+      endfor
+    endif
+  endfor
+  return ''
 endfunction
