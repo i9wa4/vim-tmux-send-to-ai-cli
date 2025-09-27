@@ -1,5 +1,5 @@
 " Default supported AI CLI processes
-let s:DEFAULT_AI_CLIS = ['claude', 'codex', 'gemini']
+let s:DEFAULT_AI_CLIS = ['claude', 'codex', 'copilot', 'gemini']
 
 function! tmux_send_to_ai_cli#send_yanked() abort
   let l:text = getreg('*')
