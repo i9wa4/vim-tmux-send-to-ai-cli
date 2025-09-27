@@ -116,7 +116,8 @@ function! s:send_text_to_ai_cli(text, count, explicit, description) abort
 
   " Send text using tmux send-keys -l for better performance and compatibility
   " The -l flag treats the input as literal text, preserving newlines
-  call system('tmux send-keys -t ' . l:target . ' -l ' . shellescape(a:text))
+  " The -- ensures text starting with hyphens isn't treated as options
+  call system('tmux send-keys -t ' . l:target . ' -l -- ' . shellescape(a:text))
   " Send Enter to submit
   call system('tmux send-keys -t ' . l:target . ' Enter')
 
