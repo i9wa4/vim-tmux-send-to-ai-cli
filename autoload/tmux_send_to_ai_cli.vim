@@ -114,30 +114,11 @@ function! s:send_text_to_ai_cli(text, count, explicit, description) abort
     return
   endif
 
-  " Send all text in a single tmux command for better performance
-  let l:lines = split(a:text, '\n')
-  if empty(l:lines)
-    return
-  endif
-
-  " Build and execute tmux command for all lines
-  " First send all text lines with C-j between them
-  let l:cmd_parts = []
-  for l:i in range(len(l:lines))
-    call add(l:cmd_parts, shellescape(l:lines[l:i]))
-    " Add C-j between lines (not after the last line)
-    if l:i < len(l:lines) - 1
-      call add(l:cmd_parts, 'C-j')
-    endif
-  endfor
-
-  if !empty(l:cmd_parts)
-    " Send all lines at once
-    let l:cmd = 'tmux send-keys -t ' . l:target . ' -- ' . join(l:cmd_parts, ' ')
-    call system(l:cmd)
-    " Send Enter separately to ensure it's interpreted as a key
-    call system('tmux send-keys -t ' . l:target . ' Enter')
-  endif
+  " Send text using tmux send-keys -l for better performance and compatibility
+  " The -l flag treats the input as literal text, preserving newlines
+  call system('tmux send-keys -t ' . l:target . ' -l ' . shellescape(a:text))
+  " Send Enter to submit
+  call system('tmux send-keys -t ' . l:target . ' Enter')
 
   " Success message
   echo 'Sent ' . a:description . ' to AI CLI'
