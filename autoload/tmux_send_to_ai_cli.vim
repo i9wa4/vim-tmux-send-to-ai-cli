@@ -11,8 +11,7 @@ function! tmux_send_to_ai_cli#send_buffer(...) abort
 
   let l:count = a:0 >= 1 ? a:1 : 0
   let l:explicit = a:0 >= 2 ? a:2 : 0
-  call s:send_text_to_ai_cli(l:text, l:count, l:explicit)
-  echo "Sent entire buffer to AI CLI"
+  call s:send_text_to_ai_cli(l:text, l:count, l:explicit, 'entire buffer')
 endfunction
 
 function! tmux_send_to_ai_cli#send_range(...) range abort
@@ -24,8 +23,7 @@ function! tmux_send_to_ai_cli#send_range(...) range abort
 
   let l:count = a:0 >= 1 ? a:1 : 0
   let l:explicit = a:0 >= 2 ? a:2 : 0
-  call s:send_text_to_ai_cli(l:text, l:count, l:explicit)
-  echo "Sent selected range to AI CLI"
+  call s:send_text_to_ai_cli(l:text, l:count, l:explicit, 'selected range')
 endfunction
 
 function! tmux_send_to_ai_cli#send_visual(...) abort
@@ -44,8 +42,7 @@ function! tmux_send_to_ai_cli#send_visual(...) abort
 
   let l:count = a:0 >= 1 ? a:1 : 0
   let l:explicit = a:0 >= 2 ? a:2 : 0
-  call s:send_text_to_ai_cli(l:text, l:count, l:explicit)
-  echo "Sent visual selection to AI CLI"
+  call s:send_text_to_ai_cli(l:text, l:count, l:explicit, 'visual selection')
 endfunction
 
 function! tmux_send_to_ai_cli#send_current_line(...) abort
@@ -57,8 +54,7 @@ function! tmux_send_to_ai_cli#send_current_line(...) abort
 
   let l:count = a:0 >= 1 ? a:1 : 0
   let l:explicit = a:0 >= 2 ? a:2 : 0
-  call s:send_text_to_ai_cli(l:text, l:count, l:explicit)
-  echo "Sent current line to AI CLI"
+  call s:send_text_to_ai_cli(l:text, l:count, l:explicit, 'current line')
 endfunction
 
 function! tmux_send_to_ai_cli#send_paragraph(...) abort
@@ -97,11 +93,10 @@ function! tmux_send_to_ai_cli#send_paragraph(...) abort
 
   let l:count = a:0 >= 1 ? a:1 : 0
   let l:explicit = a:0 >= 2 ? a:2 : 0
-  call s:send_text_to_ai_cli(l:text, l:count, l:explicit)
-  echo "Sent current paragraph to AI CLI"
+  call s:send_text_to_ai_cli(l:text, l:count, l:explicit, 'current paragraph')
 endfunction
 
-function! s:send_text_to_ai_cli(text, count, explicit) abort
+function! s:send_text_to_ai_cli(text, count, explicit, description) abort
   " Handle explicit pane number
   if a:explicit && a:count > 0
     let l:target = system('tmux display-message -t .' . a:count . ' -p "#{pane_id}" 2>/dev/null | tr -d "\n"')
@@ -119,25 +114,27 @@ function! s:send_text_to_ai_cli(text, count, explicit) abort
     return
   endif
 
-  " Send text line by line
-  for l:line in split(a:text, '\n')
-    call system('tmux send-keys -t ' . l:target . ' -- ' . shellescape(l:line))
-    call system('tmux send-keys -t ' . l:target . ' C-j')
-  endfor
+  " Send text using named tmux buffer (much faster for multi-line text)
+  " Use a unique buffer name to avoid conflicts
+  let l:buffer_name = 'vim-tmux-send-to-ai-cli'
+  call system('tmux set-buffer -b ' . l:buffer_name . ' -- ' . shellescape(a:text))
+  call system('tmux paste-buffer -b ' . l:buffer_name . ' -d -t ' . l:target)  " -d deletes buffer after paste
   call system('tmux send-keys -t ' . l:target . ' Enter')
+
+  " Success message
+  echo 'Sent ' . a:description . ' to AI CLI'
 endfunction
 
 function! s:find_ai_cli_pane() abort
-  " Get panes with their info for current window (sorted by pane index)
-  let l:panes = system('tmux list-panes -F "#{pane_index} #{pane_pid} #{pane_id}"')
+  " Get panes for current window (sorted by pane index)
+  let l:panes_output = system('tmux list-panes -F "#{pane_index} #{pane_pid} #{pane_id}"')
 
   " Build ordered list of panes
   let l:pane_list = []
-  for l:line in split(l:panes, "\n")
+  for l:line in split(l:panes_output, "\n")
     let l:parts = split(l:line)
     if len(l:parts) >= 3
-      " Store as [index, pid, pane_id]
-      call add(l:pane_list, {'index': l:parts[0], 'pid': l:parts[1], 'pane_id': l:parts[2]})
+      call add(l:pane_list, {'index': l:parts[0], 'pid': l:parts[1], 'id': l:parts[2]})
     endif
   endfor
 
@@ -145,33 +142,30 @@ function! s:find_ai_cli_pane() abort
     return ''
   endif
 
-  " Get process info for all panes
-  let l:pids = map(copy(l:pane_list), 'v:val.pid')
-  let l:ps_output = system('ps -p ' . join(l:pids, ',') . ' -o pid,command 2>/dev/null')
+  " Get all processes with parent PIDs
+  let l:ps_output = system('ps -ax -o ppid,command')
 
-  " Build process map
-  let l:process_map = {}
-  for l:line in split(l:ps_output, "\n")[1:]  " Skip header
-    let l:pid = matchstr(l:line, '^\s*\zs\d\+')
-    if !empty(l:pid)
-      let l:process_map[l:pid] = l:line
-    endif
-  endfor
-
-  " Combine default and additional process names
-  let l:additional = get(g:, 'tmux_ai_cli_additional_processes', [])
+  " Combine default and additional process names (with backward compatibility)
+  let l:additional = get(g:, 'tmux_ai_cli_additional_processes',
+                        \ get(g:, 'ai_cli_additional_processes', []))
   let l:process_names = uniq(sort(s:DEFAULT_AI_CLIS + l:additional))
 
   " Search for AI CLI in pane index order
   for l:pane in l:pane_list
-    if has_key(l:process_map, l:pane.pid)
-      let l:cmd_line = l:process_map[l:pane.pid]
+    for l:line in split(l:ps_output, "\n")
+      " Check if this line contains an AI CLI process
       for l:name in l:process_names
-        if l:cmd_line =~# l:name && l:cmd_line !~# 'grep'
-          return l:pane.pane_id
+        if l:line =~# l:name && l:line !~# 'grep'
+          " Extract PPID from the line
+          let l:ppid = matchstr(l:line, '^\s*\zs\d\+')
+          " Check if this process belongs to current pane
+          if l:ppid == l:pane.pid
+            return l:pane.id
+          endif
         endif
       endfor
-    endif
+    endfor
   endfor
+
   return ''
 endfunction
