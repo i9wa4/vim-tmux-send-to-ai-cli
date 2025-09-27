@@ -1,40 +1,47 @@
 " Default supported AI CLI processes
+" Note: 'copilot' matches both GitHub Copilot CLI and other copilot commands
 let s:DEFAULT_AI_CLIS = ['claude', 'codex', 'copilot', 'gemini']
 
-function! tmux_send_to_ai_cli#send_yanked() abort
+function! tmux_send_to_ai_cli#send_yanked(...) abort
   let l:text = getreg('*')
   if empty(l:text)
     echo "No yanked text found in * register"
     return
   endif
 
-  call s:send_text_to_ai_cli(l:text)
+  let l:count = a:0 >= 1 ? a:1 : 0
+  let l:explicit = a:0 >= 2 ? a:2 : 0
+  call s:send_text_to_ai_cli(l:text, l:count, l:explicit)
   echo "Sent yanked text to AI CLI"
 endfunction
 
-function! tmux_send_to_ai_cli#send_buffer() abort
+function! tmux_send_to_ai_cli#send_buffer(...) abort
   let l:text = join(getline(1, '$'), "\n")
   if empty(l:text)
     echo "Buffer is empty"
     return
   endif
 
-  call s:send_text_to_ai_cli(l:text)
+  let l:count = a:0 >= 1 ? a:1 : 0
+  let l:explicit = a:0 >= 2 ? a:2 : 0
+  call s:send_text_to_ai_cli(l:text, l:count, l:explicit)
   echo "Sent entire buffer to AI CLI"
 endfunction
 
-function! tmux_send_to_ai_cli#send_range() range abort
+function! tmux_send_to_ai_cli#send_range(...) range abort
   let l:text = join(getline(a:firstline, a:lastline), "\n")
   if empty(l:text)
     echo "Selected range is empty"
     return
   endif
 
-  call s:send_text_to_ai_cli(l:text)
+  let l:count = a:0 >= 1 ? a:1 : 0
+  let l:explicit = a:0 >= 2 ? a:2 : 0
+  call s:send_text_to_ai_cli(l:text, l:count, l:explicit)
   echo "Sent selected range to AI CLI"
 endfunction
 
-function! tmux_send_to_ai_cli#send_visual() abort
+function! tmux_send_to_ai_cli#send_visual(...) abort
   let l:save_reg = getreg('"')
   let l:save_regtype = getregtype('"')
 
@@ -48,24 +55,28 @@ function! tmux_send_to_ai_cli#send_visual() abort
     return
   endif
 
-  call s:send_text_to_ai_cli(l:text)
+  let l:count = a:0 >= 1 ? a:1 : 0
+  let l:explicit = a:0 >= 2 ? a:2 : 0
+  call s:send_text_to_ai_cli(l:text, l:count, l:explicit)
   echo "Sent visual selection to AI CLI"
 endfunction
 
-function! tmux_send_to_ai_cli#send_current_line() abort
+function! tmux_send_to_ai_cli#send_current_line(...) abort
   let l:text = getline('.')
   if empty(l:text)
     echo "Current line is empty"
     return
   endif
 
-  call s:send_text_to_ai_cli(l:text)
+  let l:count = a:0 >= 1 ? a:1 : 0
+  let l:explicit = a:0 >= 2 ? a:2 : 0
+  call s:send_text_to_ai_cli(l:text, l:count, l:explicit)
   echo "Sent current line to AI CLI"
 endfunction
 
-function! tmux_send_to_ai_cli#send_paragraph() abort
+function! tmux_send_to_ai_cli#send_paragraph(...) abort
   let l:save_pos = getpos('.')
-  
+
   " Find paragraph boundaries
   let l:start_line = search('^\s*$', 'bnW') + 1
   if l:start_line == 1 && getline(1) =~ '^\s*$'
@@ -74,12 +85,12 @@ function! tmux_send_to_ai_cli#send_paragraph() abort
   if l:start_line == 0
     let l:start_line = 1
   endif
-  
+
   let l:end_line = search('^$\|^\s*$', 'nW') - 1
   if l:end_line < 0
     let l:end_line = line('$')
   endif
-  
+
   " Make sure we include the current line
   if l:start_line > line('.')
     let l:start_line = line('.')
@@ -87,24 +98,30 @@ function! tmux_send_to_ai_cli#send_paragraph() abort
   if l:end_line < line('.')
     let l:end_line = line('.')
   endif
-  
+
   let l:text = join(getline(l:start_line, l:end_line), "\n")
-  
+
   call setpos('.', l:save_pos)
-  
+
   if empty(l:text)
     echo "No paragraph found"
     return
   endif
 
-  call s:send_text_to_ai_cli(l:text)
+  let l:count = a:0 >= 1 ? a:1 : 0
+  let l:explicit = a:0 >= 2 ? a:2 : 0
+  call s:send_text_to_ai_cli(l:text, l:count, l:explicit)
   echo "Sent current paragraph to AI CLI"
 endfunction
 
-function! s:send_text_to_ai_cli(text) abort
-  let l:target = s:find_ai_cli_pane()
+function! s:send_text_to_ai_cli(text, count, explicit) abort
+  let l:target = s:get_target_pane(a:count, a:explicit)
   if empty(l:target)
-    echo "AI CLI pane not found in current session"
+    if a:explicit && a:count > 0
+      echo "Pane " . a:count . " not found in current window"
+    else
+      echo "AI CLI pane not found in current session"
+    endif
     return
   endif
 
@@ -157,6 +174,21 @@ function! s:find_ai_cli_in_panes(pane_map, ps_output, process_names) abort
   return ''
 endfunction
 
+function! s:get_target_pane(count, explicit) abort
+  " If count is explicitly provided (user typed a number), use it as pane index
+  if a:explicit && a:count > 0
+    let l:pane_id = system('tmux display-message -t .' . a:count . ' -p "#{pane_id}" 2>/dev/null | tr -d "\n"')
+    if v:shell_error == 0 && !empty(l:pane_id)
+      return l:pane_id
+    else
+      return ''
+    endif
+  endif
+
+  " Otherwise, use auto-detection
+  return s:find_ai_cli_pane()
+endfunction
+
 function! s:find_ai_cli_pane() abort
   " Get process info once for both searches
   let l:ps_output = system('ps -ax -o ppid,command')
@@ -177,7 +209,7 @@ function! s:find_ai_cli_pane() abort
   if empty(l:pane_map)
     return get(g:, 'ai_cli_target', '')
   endif
-  
+
   let l:result = s:find_ai_cli_in_panes(l:pane_map, l:ps_output, l:process_names)
   if !empty(l:result)
     return l:result

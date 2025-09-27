@@ -1,33 +1,31 @@
 # vim-tmux-send-to-ai-cli
 
-Send text from Vim to a tmux pane running following AI CLIs:
+Stop copying and pasting. Send Vim text directly to AI CLIs in tmux.
 
-- Claude Code
-- Codex CLI
-- GitHub Copilot CLI
-- Gemini CLI
-- Additional CLIs can be configured (see `:help g:ai_cli_additional_processes`)
-
-The plugin auto-detects AI CLI panes in tmux - no manual configuration needed.
+Intelligent pane detection. No manual pane IDs or session names needed.
 
 Read [help](doc/tmux_send_to_ai_cli.txt) for details.
 
-## Installation
+## Features
 
-Using [vim-plug](https://github.com/junegunn/vim-plug):
+### Supported AI CLIs
 
-```vim
-Plug 'i9wa4/vim-tmux-send-to-ai-cli'
-```
+- Claude Code
+- Codex CLI
+- Gemini CLI
+- GitHub Copilot CLI
+- Additional CLIs can be configured (see `:help g:ai_cli_additional_processes`)
 
-## Quick Start
+### Send methods
 
-Add these mappings to your vimrc:
+- Current line: Send the line where your cursor is
+- Current paragraph: Send the paragraph around your cursor
+- Visual selection: Send highlighted text
+- Entire buffer: Send the whole file you're editing
+- Yanked text: Send text from * register
+- Line ranges: Send specific lines (e.g., lines 10-20)
 
-```vim
-nmap <Leader>ay <Plug>(tmux-send-to-ai-cli-yanked)
-nmap <Leader>ab <Plug>(tmux-send-to-ai-cli-buffer)
-vmap <Leader>av <Plug>(tmux-send-to-ai-cli-visual)
-nmap <Leader>al <Plug>(tmux-send-to-ai-cli-current-line)
-nmap <Leader>ap <Plug>(tmux-send-to-ai-cli-paragraph)
-```
+### Target selection
+
+- Auto-detection: Automatically finds AI CLI panes in tmux
+- Pane selection: Send to specific pane by number
