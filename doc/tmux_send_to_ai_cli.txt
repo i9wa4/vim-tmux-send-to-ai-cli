@@ -19,7 +19,14 @@ CONTENTS                                           *tmux-send-to-ai-cli-contents
 ==============================================================================
 1. INTRODUCTION                                *tmux-send-to-ai-cli-introduction*
 
-Send text from Vim to a tmux pane running following AI CLIs:
+Stop copying and pasting. Send Vim text directly to AI CLIs in tmux.
+
+Intelligent pane detection. No manual pane IDs or session names needed.
+
+==============================================================================
+2. FEATURES                                        *tmux-send-to-ai-cli-features*
+
+Supported AI CLIs:
 
 - Claude Code
 - Codex CLI
@@ -27,21 +34,19 @@ Send text from Vim to a tmux pane running following AI CLIs:
 - GitHub Copilot CLI
 - Additional CLIs can be configured (see |g:ai_cli_additional_processes|)
 
-The plugin auto-detects AI CLI panes in tmux - no manual configuration needed.
+Send methods:
 
-==============================================================================
-2. FEATURES                                        *tmux-send-to-ai-cli-features*
+- Current line: Send the line where your cursor is
+- Current paragraph: Send the paragraph around your cursor
+- Visual selection: Send highlighted text
+- Entire buffer: Send the whole file you're editing
+- Yanked text: Send text from * register
+- Line ranges: Send specific lines (e.g., lines 10-20)
 
-Send code or text from Vim directly to your AI assistant:
+Target selection:
 
-- Yanked text - Send text from Vim registers
-- Entire buffer - Send the whole file you're editing
-- Visual selection - Send highlighted text
-- Line ranges - Send specific lines (e.g., lines 10-20)
-- Current line - Send the line where your cursor is
-- Current paragraph - Send the paragraph around your cursor
-- Auto-detection - Automatically finds AI CLI panes in tmux
-- Pane selection - Send to specific pane by number (e.g., 2<Leader>ay for pane 2)
+- Auto-detection: Automatically finds AI CLI panes in tmux
+- Pane selection: Send to specific pane by number (e.g., 2<Leader>ay for pane 2)
 
 ==============================================================================
 3. REQUIREMENTS                                *tmux-send-to-ai-cli-requirements*
@@ -56,7 +61,6 @@ Send code or text from Vim directly to your AI assistant:
 Using vim-plug: >
     Plug 'i9wa4/vim-tmux-send-to-ai-cli'
 <
-
 ==============================================================================
 5. CONFIGURATION                              *tmux-send-to-ai-cli-configuration*
 
@@ -114,16 +118,17 @@ Example: >
 
 Plug mappings for custom configuration:
 
-    <Plug>(tmux-send-to-ai-cli-yanked)          Send yanked text
-    <Plug>(tmux-send-to-ai-cli-buffer)          Send entire buffer
-    <Plug>(tmux-send-to-ai-cli-visual)          Send visual selection
     <Plug>(tmux-send-to-ai-cli-current-line)    Send current line
     <Plug>(tmux-send-to-ai-cli-paragraph)       Send current paragraph
+    <Plug>(tmux-send-to-ai-cli-visual)          Send visual selection
+    <Plug>(tmux-send-to-ai-cli-buffer)          Send entire buffer
+    <Plug>(tmux-send-to-ai-cli-yanked)          Send yanked text
 
 Pane selection: >
-    2<Leader>ay    Send yanked text to pane 2
-    <Leader>ay     Auto-detect AI CLI pane (default)
+    2<Leader>al    Send current line to pane 2
+    <Leader>al     Auto-detect AI CLI pane (default)
 <
+
 You can send text to a specific pane by prefixing the mapping with a number.
 
 ==============================================================================
@@ -140,11 +145,11 @@ You can send text to a specific pane by prefixing the mapping with a number.
 9. EXAMPLES                                        *tmux-send-to-ai-cli-examples*
 
 Custom mappings: >
-    nmap <Leader>ay <Plug>(tmux-send-to-ai-cli-yanked)
-    nmap <Leader>ab <Plug>(tmux-send-to-ai-cli-buffer)
-    vmap <Leader>av <Plug>(tmux-send-to-ai-cli-visual)
     nmap <Leader>al <Plug>(tmux-send-to-ai-cli-current-line)
     nmap <Leader>ap <Plug>(tmux-send-to-ai-cli-paragraph)
+    vmap <Leader>av <Plug>(tmux-send-to-ai-cli-visual)
+    nmap <Leader>ab <Plug>(tmux-send-to-ai-cli-buffer)
+    nmap <Leader>ay <Plug>(tmux-send-to-ai-cli-yanked)
 <
 
 Fallback target configuration: >
