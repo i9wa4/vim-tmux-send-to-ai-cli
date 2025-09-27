@@ -46,7 +46,7 @@ Send methods:
 Target selection:
 
 - Auto-detection: Automatically finds AI CLI panes in tmux
-- Pane selection: Send to specific pane by number (e.g., 2<Leader>ay for pane 2)
+- Pane selection: Send to specific pane by number
 
 ==============================================================================
 3. REQUIREMENTS                                *tmux-send-to-ai-cli-requirements*
