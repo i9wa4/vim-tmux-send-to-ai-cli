@@ -41,6 +41,7 @@ Send code or text from Vim directly to your AI assistant:
 - Current line - Send the line where your cursor is
 - Current paragraph - Send the paragraph around your cursor
 - Auto-detection - Automatically finds AI CLI panes in tmux
+- Pane selection - Send to specific pane by number (e.g., 2<Leader>ay for pane 2)
 
 ==============================================================================
 3. REQUIREMENTS                                *tmux-send-to-ai-cli-requirements*
@@ -118,6 +119,12 @@ Plug mappings for custom configuration:
     <Plug>(tmux-send-to-ai-cli-visual)          Send visual selection
     <Plug>(tmux-send-to-ai-cli-current-line)    Send current line
     <Plug>(tmux-send-to-ai-cli-paragraph)       Send current paragraph
+
+Pane selection: >
+    2<Leader>ay    Send yanked text to pane 2
+    <Leader>ay     Auto-detect AI CLI pane (default)
+<
+You can send text to a specific pane by prefixing the mapping with a number.
 
 ==============================================================================
 8. LIMITATIONS                                    *tmux-send-to-ai-cli-limitations*

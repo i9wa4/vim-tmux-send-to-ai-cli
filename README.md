@@ -31,3 +31,9 @@ vmap <Leader>av <Plug>(tmux-send-to-ai-cli-visual)
 nmap <Leader>al <Plug>(tmux-send-to-ai-cli-current-line)
 nmap <Leader>ap <Plug>(tmux-send-to-ai-cli-paragraph)
 ```
+
+### Pane Selection
+
+You can send text to a specific pane by prefixing the mapping with a number:
+- `2<Leader>ay` - Send yanked text to pane 2
+- `<Leader>ay` - Auto-detect AI CLI pane (default)
