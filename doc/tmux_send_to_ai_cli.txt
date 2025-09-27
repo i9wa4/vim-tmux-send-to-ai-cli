@@ -29,6 +29,7 @@ between your text editor and AI assistant.
 
 - Claude Code
 - Codex CLI
+- GitHub Copilot CLI
 - Gemini CLI
 - Additional CLIs can be configured (see |g:ai_cli_additional_processes|)
 
@@ -75,7 +76,7 @@ g:ai_cli_additional_processes~
     Default: `[]` (empty list)
 
     Additional process names to search for when auto-detecting the AI CLI pane.
-    These will be added to the built-in list (claude, codex, gemini).
+    These will be added to the built-in list (claude, codex, copilot, gemini).
     Use this to support custom AI CLI tools.
 
 Example: >

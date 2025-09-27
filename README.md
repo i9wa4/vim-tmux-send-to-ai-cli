@@ -4,6 +4,7 @@ Send text from Vim to a tmux pane running following AI CLIs:
 
 - Claude Code
 - Codex CLI
+- GitHub Copilot CLI
 - Gemini CLI
 - Additional CLIs can be configured (see `:help g:ai_cli_additional_processes`)
 
