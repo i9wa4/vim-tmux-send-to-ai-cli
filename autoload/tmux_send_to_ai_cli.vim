@@ -30,6 +30,8 @@ function! tmux_send_to_ai_cli#send_visual(...) abort
   let l:save_reg = getreg('"')
   let l:save_regtype = getregtype('"')
 
+  " Use gv""y to explicitly yank to the unnamed register
+  " ("" specifies the unnamed register, see :help registers)
   normal! gv""y
   let l:text = getreg('"')
 
