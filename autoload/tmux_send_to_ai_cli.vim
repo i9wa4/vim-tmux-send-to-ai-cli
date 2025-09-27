@@ -147,9 +147,8 @@ function! s:find_ai_cli_pane() abort
   " Get all processes with parent PIDs
   let l:ps_output = system('ps -ax -o ppid,command')
 
-  " Combine default and additional process names (with backward compatibility)
-  let l:additional = get(g:, 'tmux_ai_cli_additional_processes',
-                        \ get(g:, 'ai_cli_additional_processes', []))
+  " Combine default and additional process names
+  let l:additional = get(g:, 'tmux_ai_cli_additional_processes', [])
   let l:process_names = uniq(sort(s:DEFAULT_AI_CLIS + l:additional))
 
   " Search for AI CLI in pane index order
