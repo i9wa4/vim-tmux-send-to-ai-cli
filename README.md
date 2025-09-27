@@ -12,8 +12,8 @@ Read [help](doc/tmux_send_to_ai_cli.txt) for details.
 
 - Claude Code
 - Codex CLI
-- Gemini CLI
 - GitHub Copilot CLI
+- Gemini CLI
 - Additional CLIs can be configured (see `:help g:ai_cli_additional_processes`)
 
 ### 1.2. Send methods
