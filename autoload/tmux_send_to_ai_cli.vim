@@ -1,19 +1,6 @@
 " Default supported AI CLI processes
-" Note: 'copilot' matches both GitHub Copilot CLI and other copilot commands
+" NOTE: 'copilot' matches both GitHub Copilot CLI and other copilot commands
 let s:DEFAULT_AI_CLIS = ['claude', 'codex', 'copilot', 'gemini']
-
-function! tmux_send_to_ai_cli#send_yanked(...) abort
-  let l:text = getreg('*')
-  if empty(l:text)
-    echo "No yanked text found in * register"
-    return
-  endif
-
-  let l:count = a:0 >= 1 ? a:1 : 0
-  let l:explicit = a:0 >= 2 ? a:2 : 0
-  call s:send_text_to_ai_cli(l:text, l:count, l:explicit)
-  echo "Sent yanked text to AI CLI"
-endfunction
 
 function! tmux_send_to_ai_cli#send_buffer(...) abort
   let l:text = join(getline(1, '$'), "\n")

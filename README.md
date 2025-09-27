@@ -22,7 +22,6 @@ Read [help](doc/tmux_send_to_ai_cli.txt) for details.
 - Current paragraph: Send the paragraph around your cursor
 - Visual selection: Send highlighted text
 - Entire buffer: Send the whole file you're editing
-- Yanked text: Send text from * register
 - Line ranges: Send specific lines (e.g., lines 10-20)
 
 ### Target selection

@@ -93,10 +93,6 @@ Example: >
 ==============================================================================
 6. COMMANDS                                        *tmux-send-to-ai-cli-commands*
 
-                                                        *:AiCliSendYanked*
-:AiCliSendYanked
-    Send the content of the * register (yanked text) to AI CLI.
-
                                                         *:AiCliSendBuffer*
 :AiCliSendBuffer
     Send the entire current buffer to AI CLI.
@@ -122,7 +118,6 @@ Plug mappings for custom configuration:
     <Plug>(tmux-send-to-ai-cli-paragraph)       Send current paragraph
     <Plug>(tmux-send-to-ai-cli-visual)          Send visual selection
     <Plug>(tmux-send-to-ai-cli-buffer)          Send entire buffer
-    <Plug>(tmux-send-to-ai-cli-yanked)          Send yanked text
 
 Pane selection: >
     2<Leader>al    Send current line to pane 2
@@ -149,7 +144,6 @@ Custom mappings: >
     nmap <Leader>ap <Plug>(tmux-send-to-ai-cli-paragraph)
     vmap <Leader>av <Plug>(tmux-send-to-ai-cli-visual)
     nmap <Leader>ab <Plug>(tmux-send-to-ai-cli-buffer)
-    nmap <Leader>ay <Plug>(tmux-send-to-ai-cli-yanked)
 <
 
 Fallback target configuration: >
