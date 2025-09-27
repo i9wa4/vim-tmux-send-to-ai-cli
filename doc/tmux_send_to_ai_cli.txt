@@ -76,7 +76,7 @@ g:ai_cli_additional_processes~
     Default: `[]` (empty list)
 
     Additional process names to search for when auto-detecting the AI CLI pane.
-    These will be added to the built-in list (claude, codex, copilot, gemini).
+    These will be added to the built-in list of supported AI CLIs.
     Use this to support custom AI CLI tools.
 
 Example: >
