@@ -30,7 +30,7 @@ function! tmux_send_to_ai_cli#send_visual(...) abort
   let l:save_reg = getreg('"')
   let l:save_regtype = getregtype('"')
 
-  normal! gv"y
+  normal! gv""y
   let l:text = getreg('"')
 
   call setreg('"', l:save_reg, l:save_regtype)
