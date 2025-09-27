@@ -114,11 +114,16 @@ function! s:send_text_to_ai_cli(text, count, explicit, description) abort
     return
   endif
 
-  " Send text using named tmux buffer (much faster for multi-line text)
-  " Use a unique buffer name to avoid conflicts
-  let l:buffer_name = 'vim-tmux-send-to-ai-cli'
-  call system('tmux set-buffer -b ' . l:buffer_name . ' -- ' . shellescape(a:text))
-  call system('tmux paste-buffer -b ' . l:buffer_name . ' -d -t ' . l:target)  " -d deletes buffer after paste
+  " Send text line by line (compatible with all AI CLIs)
+  let l:lines = split(a:text, '\n')
+  for l:i in range(len(l:lines))
+    call system('tmux send-keys -t ' . l:target . ' -- ' . shellescape(l:lines[l:i]))
+    " Only send C-j between lines, not after the last line
+    if l:i < len(l:lines) - 1
+      call system('tmux send-keys -t ' . l:target . ' C-j')
+    endif
+  endfor
+  " Send Enter once at the end to execute
   call system('tmux send-keys -t ' . l:target . ' Enter')
 
   " Success message
