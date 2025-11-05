@@ -11,6 +11,14 @@ function! tmux_send_to_ai_cli#send_buffer(...) abort
 
   let l:count = a:0 >= 1 ? a:1 : 0
   let l:explicit = a:0 >= 2 ? a:2 : 0
+  let l:send_all = a:0 >= 3 ? a:3 : 0
+
+  " If send_all is enabled, use count=-1 to trigger all panes mode
+  if l:send_all
+    let l:count = -1
+    let l:explicit = 0
+  endif
+
   call s:send_text_to_ai_cli(l:text, l:count, l:explicit, 'entire buffer')
 endfunction
 
@@ -23,6 +31,14 @@ function! tmux_send_to_ai_cli#send_range(...) range abort
 
   let l:count = a:0 >= 1 ? a:1 : 0
   let l:explicit = a:0 >= 2 ? a:2 : 0
+  let l:send_all = a:0 >= 3 ? a:3 : 0
+
+  " If send_all is enabled, use count=-1 to trigger all panes mode
+  if l:send_all
+    let l:count = -1
+    let l:explicit = 0
+  endif
+
   call s:send_text_to_ai_cli(l:text, l:count, l:explicit, 'selected range')
 endfunction
 
@@ -44,6 +60,14 @@ function! tmux_send_to_ai_cli#send_visual(...) abort
 
   let l:count = a:0 >= 1 ? a:1 : 0
   let l:explicit = a:0 >= 2 ? a:2 : 0
+  let l:send_all = a:0 >= 3 ? a:3 : 0
+
+  " If send_all is enabled, use count=-1 to trigger all panes mode
+  if l:send_all
+    let l:count = -1
+    let l:explicit = 0
+  endif
+
   call s:send_text_to_ai_cli(l:text, l:count, l:explicit, 'visual selection')
 endfunction
 
@@ -56,6 +80,14 @@ function! tmux_send_to_ai_cli#send_current_line(...) abort
 
   let l:count = a:0 >= 1 ? a:1 : 0
   let l:explicit = a:0 >= 2 ? a:2 : 0
+  let l:send_all = a:0 >= 3 ? a:3 : 0
+
+  " If send_all is enabled, use count=-1 to trigger all panes mode
+  if l:send_all
+    let l:count = -1
+    let l:explicit = 0
+  endif
+
   call s:send_text_to_ai_cli(l:text, l:count, l:explicit, 'current line')
 endfunction
 
@@ -95,10 +127,52 @@ function! tmux_send_to_ai_cli#send_paragraph(...) abort
 
   let l:count = a:0 >= 1 ? a:1 : 0
   let l:explicit = a:0 >= 2 ? a:2 : 0
+  let l:send_all = a:0 >= 3 ? a:3 : 0
+
+  " If send_all is enabled, use count=-1 to trigger all panes mode
+  if l:send_all
+    let l:count = -1
+    let l:explicit = 0
+  endif
+
   call s:send_text_to_ai_cli(l:text, l:count, l:explicit, 'current paragraph')
 endfunction
 
 function! s:send_text_to_ai_cli(text, count, explicit, description) abort
+  " Handle send to all AI CLI panes (count=-1)
+  if a:count == -1
+    let l:targets = s:find_all_ai_cli_panes()
+    if empty(l:targets)
+      echo "No AI CLI found in current window. Start an AI CLI (claude, codex, copilot, gemini) in a tmux pane."
+      return
+    endif
+
+    " Send to all panes (best effort)
+    let l:success_count = 0
+    let l:fail_count = 0
+    for l:target in l:targets
+      call system('tmux send-keys -t ' . l:target . ' -l -- ' . shellescape(a:text))
+      if v:shell_error == 0
+        call system('tmux send-keys -t ' . l:target . ' Enter')
+        if v:shell_error == 0
+          let l:success_count += 1
+        else
+          let l:fail_count += 1
+        endif
+      else
+        let l:fail_count += 1
+      endif
+    endfor
+
+    " Display result
+    if l:fail_count > 0
+      echo 'Sent ' . a:description . ' to ' . l:success_count . ' panes (' . l:fail_count . ' failed)'
+    else
+      echo 'Sent ' . a:description . ' to ' . l:success_count . ' AI CLI panes'
+    endif
+    return
+  endif
+
   " Handle explicit pane number
   if a:explicit && a:count > 0
     let l:target = system('tmux display-message -t .' . a:count . ' -p "#{pane_id}" 2>/dev/null | tr -d "\n"')
@@ -169,4 +243,55 @@ function! s:find_ai_cli_pane() abort
   endfor
 
   return ''
+endfunction
+
+function! s:find_all_ai_cli_panes() abort
+  " Get panes for current window (sorted by pane index)
+  let l:panes_output = system('tmux list-panes -F "#{pane_index} #{pane_pid} #{pane_id}"')
+
+  " Build ordered list of panes
+  let l:pane_list = []
+  for l:line in split(l:panes_output, "\n")
+    let l:parts = split(l:line)
+    if len(l:parts) >= 3
+      call add(l:pane_list, {'index': l:parts[0], 'pid': l:parts[1], 'id': l:parts[2]})
+    endif
+  endfor
+
+  if empty(l:pane_list)
+    return []
+  endif
+
+  " Get all processes with parent PIDs
+  let l:ps_output = system('ps -ax -o ppid,command')
+
+  " Combine default and additional process names
+  let l:additional = get(g:, 'tmux_ai_cli_additional_processes', [])
+  let l:process_names = uniq(sort(s:DEFAULT_AI_CLIS + l:additional))
+
+  " Collect all AI CLI panes
+  let l:ai_cli_panes = []
+  for l:pane in l:pane_list
+    let l:found = 0
+    for l:line in split(l:ps_output, "\n")
+      " Check if this line contains an AI CLI process
+      for l:name in l:process_names
+        if l:line =~# l:name && l:line !~# 'grep'
+          " Extract PPID from the line
+          let l:ppid = matchstr(l:line, '^\s*\zs\d\+')
+          " Check if this process belongs to current pane
+          if l:ppid == l:pane.pid
+            call add(l:ai_cli_panes, l:pane.id)
+            let l:found = 1
+            break
+          endif
+        endif
+      endfor
+      if l:found
+        break
+      endif
+    endfor
+  endfor
+
+  return l:ai_cli_panes
 endfunction
