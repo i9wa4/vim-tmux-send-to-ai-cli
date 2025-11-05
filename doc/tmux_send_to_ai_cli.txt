@@ -49,6 +49,7 @@ Target selection:
     - Searches panes in pane index order (0, 1, 2...)
     - Returns the first matching AI CLI pane
 - Pane selection: Send to specific pane by number in current window
+- All panes: Send to all AI CLI panes at once in current window
 
 ==============================================================================
 3. REQUIREMENTS                                *tmux-send-to-ai-cli-requirements*
@@ -97,15 +98,36 @@ Example: >
 :AiCliSendParagraph
     Send the current paragraph to AI CLI.
 
+                                                     *:AiCliSendBufferAll*
+:AiCliSendBufferAll
+    Send the entire current buffer to all AI CLI panes in current window.
+
+                                                      *:AiCliSendRangeAll*
+:[range]AiCliSendRangeAll
+    Send the specified range of lines to all AI CLI panes in current window.
+
+                                                 *:AiCliSendCurrentLineAll*
+:AiCliSendCurrentLineAll
+    Send the current line to all AI CLI panes in current window.
+
+                                                   *:AiCliSendParagraphAll*
+:AiCliSendParagraphAll
+    Send the current paragraph to all AI CLI panes in current window.
+
 ==============================================================================
 7. MAPPINGS                                        *tmux-send-to-ai-cli-mappings*
 
 Plug mappings for custom configuration:
 
-    <Plug>(tmux-send-to-ai-cli-current-line)    Send current line
-    <Plug>(tmux-send-to-ai-cli-paragraph)       Send current paragraph
-    <Plug>(tmux-send-to-ai-cli-visual)          Send visual selection
-    <Plug>(tmux-send-to-ai-cli-buffer)          Send entire buffer
+    <Plug>(tmux-send-to-ai-cli-current-line)        Send current line
+    <Plug>(tmux-send-to-ai-cli-paragraph)           Send current paragraph
+    <Plug>(tmux-send-to-ai-cli-visual)              Send visual selection
+    <Plug>(tmux-send-to-ai-cli-buffer)              Send entire buffer
+
+    <Plug>(tmux-send-to-ai-cli-current-line-all)    Send current line to all panes
+    <Plug>(tmux-send-to-ai-cli-paragraph-all)       Send current paragraph to all panes
+    <Plug>(tmux-send-to-ai-cli-visual-all)          Send visual selection to all panes
+    <Plug>(tmux-send-to-ai-cli-buffer-all)          Send entire buffer to all panes
 
 You can send text to a specific pane by prefixing the mapping with a number.
 
@@ -128,8 +150,20 @@ Custom mappings: >
     nmap <Leader>ab <Plug>(tmux-send-to-ai-cli-buffer)
 <
 
+Custom mappings for all panes: >
+    nmap <Leader>aL <Plug>(tmux-send-to-ai-cli-current-line-all)
+    nmap <Leader>aP <Plug>(tmux-send-to-ai-cli-paragraph-all)
+    vmap <Leader>aV <Plug>(tmux-send-to-ai-cli-visual-all)
+    nmap <Leader>aB <Plug>(tmux-send-to-ai-cli-buffer-all)
+<
+
 Send specific lines: >
     :10,20AiCliSendRange
+<
+
+Send to all panes: >
+    :AiCliSendBufferAll
+    :10,20AiCliSendRangeAll
 <
 
 ==============================================================================

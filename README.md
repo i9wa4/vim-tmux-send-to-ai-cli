@@ -31,3 +31,4 @@ Additional CLIs can be configured (see `:help g:tmux_ai_cli_additional_processes
   - Searches panes in pane index order (0, 1, 2...)
   - Returns the first matching AI CLI pane
 - **Pane selection**: Send to specific pane by number in current window
+- **All panes**: Send to all AI CLI panes at once in current window
